@@ -118,7 +118,7 @@ void writeOutputVector(CHashWriter& hashWriterOutputs, const CScript& script, co
  * @tparam T 
  * @param txTo 
  * @return uint256 
- */
+ */ 
 template <class T> uint256 GetHashOutputHashes(const T &txTo) {
     CHashWriter hashWriterOutputs(SER_GETHASH, 0);
     uint256 zeroRefHash(uint256S("0000000000000000000000000000000000000000000000000000000000000000"));

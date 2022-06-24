@@ -3055,6 +3055,7 @@ CreateTransactionResult CWallet::CreateTransaction(
     }
 
     CMutableTransaction txNew;
+    txNew.nVersion = 3;
     txNew.nLockTime = GetLocktimeForNewTransaction(locked_chainIn);
     txNew.vout.reserve(vecSend.size() + 1); // reserve 1 extra output for (possible) change
 
