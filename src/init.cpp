@@ -439,7 +439,7 @@ void SetupServerArgs() {
     gArgs.AddArg("-conf=<file>",
                  strprintf("Specify configuration file. Relative paths will be "
                            "prefixed by datadir location. (default: %s)",
-                           BITCOIN_CONF_FILENAME),
+                           RADIANT_CONF_FILENAME),
                  ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
     gArgs.AddArg("-datadir=<dir>", "Specify data directory", ArgsManager::ALLOW_ANY,
                  OptionsCategory::OPTIONS);
@@ -2055,7 +2055,7 @@ bool AppInitMain(Config &config, RPCServer &rpcServer,
 
     // Only log conf file usage message if conf file actually exists.
     fs::path config_file_path =
-        GetConfigFile(gArgs.GetArg("-conf", BITCOIN_CONF_FILENAME));
+        GetConfigFile(gArgs.GetArg("-conf", RADIANT_CONF_FILENAME));
     if (fs::exists(config_file_path)) {
         LogPrintf("Config file: %s\n", config_file_path.string());
     } else if (gArgs.IsArgSet("-conf")) {
