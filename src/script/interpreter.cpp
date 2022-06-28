@@ -1900,6 +1900,52 @@ template <class T> uint256 GetOutputsHash(const T &txTo) {
     return ss.GetHash();
 }
 
+/**
+ * @brief Get the Hash Output Hashes object
+ * 
+ * Generate a hash of the outputs of a transaction with the following format:
+ * 
+ * <output1-nValue>
+ * <sha256(output1-scriptPubKey)>
+ * <sha256(
+ *  output1-pushRef1
+ *  output1-pushRef2
+ *  ...
+ *  output1-pushRef3
+ * )>
+ * <output2-nValue>
+ * <sha256(output2-scriptPubKey)>
+ * <sha256(
+ *  output2-pushRef1
+ *  output2-pushRef2
+ * )>
+ * <output3-nValue>
+ * <sha256(output3-scriptPubKey)>
+ * <0000000000000000000000000000000000000000000000000000000000000000>
+ * 
+ * 
+ * In the above ^^ example the first two outputs (output1 and output2) contain 3 push refs and 2 push refs respectively.
+ * The sha256 is included of the concatenation of them. The push refs are sorted lexicographically (not in order)
+ * In the third output, since there are no push refs in that output, a 32 byte zero NULL is included instead.
+ * 
+ * Then the entire datastructure above is hashed with sha256 one more time.
+ * 
+ * The Purpose of the construction is to provide a compressed/succint way to prove the contents of one or more outputs
+ * of a transaction.
+ * 
+ * @tparam T 
+ * @param txTo 
+ * @return uint256 
+ */
+template <class T> uint256 GetHashOutputHashesCopy(const T &txTo) {
+    CHashWriter hashWriterOutputs(SER_GETHASH, 0);
+    uint256 zeroRefHash(uint256S("0000000000000000000000000000000000000000000000000000000000000000"));
+    for (const auto &txout : txTo.vout) {
+        writeOutputVector(hashWriterOutputs, txout.scriptPubKey, txout.nValue, zeroRefHash);
+    }
+    return hashWriterOutputs.GetHash();
+}
+
 } // namespace
 
 template <class T>
@@ -1907,7 +1953,7 @@ PrecomputedTransactionData::PrecomputedTransactionData(const T &txTo) {
     hashPrevouts = GetPrevoutHash(txTo);
     hashSequence = GetSequenceHash(txTo);
     hashOutputs = GetOutputsHash(txTo);
-    hashOutputHashes = GetHashOutputHashes(txTo);
+    hashOutputHashes = GetHashOutputHashesCopy(txTo);
 }
 
 // explicit instantiation
@@ -1942,7 +1988,7 @@ uint256 SignatureHash(const CScript &scriptCode, const T &txTo,
         if ((sigHashType.getBaseType() != BaseSigHashType::SINGLE) &&
             (sigHashType.getBaseType() != BaseSigHashType::NONE)) {
             hashOutputs = cache ? cache->hashOutputs : GetOutputsHash(txTo);
-            hashOutputHashes = cache ? cache->hashOutputHashes : GetHashOutputHashes(txTo);
+            hashOutputHashes = cache ? cache->hashOutputHashes : GetHashOutputHashesCopy(txTo);
         } else if ((sigHashType.getBaseType() == BaseSigHashType::SINGLE) &&
                    (nIn < txTo.vout.size())) {
             CHashWriter hashOutputSs(SER_GETHASH, 0);
