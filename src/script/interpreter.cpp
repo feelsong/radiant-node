@@ -255,18 +255,21 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
         std::map<uint256, Amount> refsToAmountMap;
 
         if (!context->isLimited() && context) {
+            std::cerr << "!context->isLimited() && context" << std::endl;
             for (uint64_t i = 0; i < context->tx().vin().size(); i++) {
                 auto const& utxoScript = context->coinScriptPubKey(i);
                 auto const& coinAmount = context->coinAmount(i);
                 OutputDataSummary outputSummary = getOutputDataSummary(utxoScript, coinAmount, zeroRefHash);
                 auto refsIt = refsToAmountMap.find(outputSummary.refsHash);
                 if (refsIt == refsToAmountMap.end()) {
+                    std::cerr << "refsIt == refsToAmountMap.end()" << std::endl;
                     // If it doesn't exist, then just initialize it
                     refsToAmountMap.insert(std::pair(outputSummary.refsHash, Amount::zero()));
                     refsIt = refsToAmountMap.find(outputSummary.refsHash);
                 }
                 // Add the amount to the key
                 refsIt->second += coinAmount;
+                std::cerr << "ref: " << outputSummary.refsHash.GetHex() << " value: " << refsIt->second << std::endl;
             }
         }
 
